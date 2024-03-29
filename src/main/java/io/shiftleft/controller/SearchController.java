@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.HtmlUtils;
 
 
 /**
@@ -22,7 +23,9 @@ public class SearchController {
     java.lang.Object message = new Object();
     try {
       ExpressionParser parser = new SpelExpressionParser();
-      Expression exp = parser.parseExpression(foo);
+      // Encode the input to prevent eval injection
+      String sanitizedFoo = HtmlUtils.htmlEscape(foo);
+      Expression exp = parser.parseExpression(sanitizedFoo);
       message = (Object) exp.getValue();
     } catch (Exception ex) {
       System.out.println(ex.getMessage());
