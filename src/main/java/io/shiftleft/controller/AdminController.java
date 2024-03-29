@@ -32,9 +32,10 @@ public class AdminController {
   {
     try {
       ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(auth));
-      ObjectInputStream objectInputStream = new ObjectInputStream(bis);
-      Object authToken = objectInputStream.readObject();
-      return ((AuthToken) authToken).isAdmin();
+      try (ObjectInputStream objectInputStream = new ObjectInputStream(bis)) {
+        Object authToken = objectInputStream.readObject();
+        return ((AuthToken) authToken).isAdmin();
+      }
     } catch (Exception ex) {
       System.out.println(" cookie cannot be deserialized: "+ex.getMessage());
       return false;
@@ -66,7 +67,7 @@ public class AdminController {
       response.getOutputStream().println(new String(bdata, StandardCharsets.UTF_8));
       return null;
     } catch (IOException ex) {
-      ex.printStackTrace();
+      System.out.println("An error occurred: " + ex.getMessage());
       // redirect to /
       return fail;
     }
@@ -104,10 +105,14 @@ public class AdminController {
       {
         AuthToken authToken = new AuthToken(AuthToken.ADMIN);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(authToken);
+        try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+          oos.writeObject(authToken);
+        }
         String cookieValue = new String(Base64.getEncoder().encode(bos.toByteArray()));
-        response.addCookie(new Cookie("auth", cookieValue ));
+        Cookie authCookie = new Cookie("auth", cookieValue);
+        authCookie.setHttpOnly(true);
+        authCookie.setSecure(true);
+        response.addCookie(authCookie);
 
         // cookie is lost after redirection
         request.getSession().setAttribute("auth",cookieValue);
@@ -118,7 +123,7 @@ public class AdminController {
     }
     catch (Exception ex)
     {
-      ex.printStackTrace();
+      System.out.println("An error occurred: " + ex.getMessage());
       // no succ == fail
       return fail;
     }

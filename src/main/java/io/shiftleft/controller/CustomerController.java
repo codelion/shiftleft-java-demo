@@ -228,8 +228,8 @@ public class CustomerController {
 
     String settingsCookie = request.getHeader("Cookie");
     String[] cookie = settingsCookie.split(",");
-	if(cookie.length<2) {
-	  httpResponse.getOutputStream().println("Malformed cookie");
+    if(cookie.length<2) {
+      httpResponse.getOutputStream().println("Malformed cookie");
       throw new Exception("cookie is incorrect");
     }
 
@@ -238,7 +238,7 @@ public class CustomerController {
     // Check md5sum
     String cookieMD5sum = cookie[1];
     String calcMD5Sum = DigestUtils.md5Hex(base64txt);
-	if(!cookieMD5sum.equals(calcMD5Sum))
+    if(!cookieMD5sum.equals(calcMD5Sum))
     {
       httpResponse.getOutputStream().println("Wrong md5");
       throw new Exception("Invalid MD5");
@@ -246,9 +246,17 @@ public class CustomerController {
 
     // Now we can store on filesystem
     String[] settings = new String(Base64.getDecoder().decode(base64txt)).split(",");
-	// storage will have ClassPathResource as basepath
+    // storage will have ClassPathResource as basepath
     ClassPathResource cpr = new ClassPathResource("./static/");
-	  File file = new File(cpr.getPath()+settings[0]);
+    // Validate and sanitize the file path
+    String filename = settings[0];
+    Path basePath = Paths.get(cpr.getPath()).toAbsolutePath().normalize();
+    Path filePath = basePath.resolve(filename).normalize();
+    if (!filePath.startsWith(basePath)) {
+      httpResponse.getOutputStream().println("Invalid file path");
+      throw new Exception("Invalid file path");
+    }
+    File file = filePath.toFile();
     if(!file.exists()) {
       file.getParentFile().mkdirs();
     }
@@ -256,7 +264,7 @@ public class CustomerController {
     FileOutputStream fos = new FileOutputStream(file, true);
     // First entry is the filename -> remove it
     String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
-    // on setting at a linez
+    // on setting at a line
     fos.write(String.join("\n",settingsArr).getBytes());
     fos.write(("\n"+cookie[cookie.length-1]).getBytes());
     fos.close();
