@@ -10,47 +10,48 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.web.csrf.CsrfToken;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
-/**
- * Error controller, based on https://stackoverflow.com/questions/31134333/this-application-has-no-explicit-mapping-for-error/31838439#31838439
- */
 @Controller
+@SessionAttributes("csrfToken")
 public class AppErrorController implements ErrorController{
 
-  /**
-   * Error Attributes in the Application
-   */
   private ErrorAttributes errorAttributes;
 
   private final static String ERROR_PATH = "/error";
 
-  /**
-   * Controller for the Error Controller
-   * @param errorAttributes
-   */
+  @Autowired
   public AppErrorController(ErrorAttributes errorAttributes) {
     this.errorAttributes = errorAttributes;
   }
 
-  /**
-   * Supports the HTML Error View
-   * @param request
-   * @return
-   */
-  @RequestMapping(value = ERROR_PATH, produces = "text/html")
-  public ModelAndView errorHtml(HttpServletRequest request) {
-    return new ModelAndView("/errors/error", getErrorAttributes(request, false));
+  @ModelAttribute("csrfToken")
+  public CsrfToken csrfToken(HttpServletRequest request) {
+    return (CsrfToken) request.getAttribute(CsrfToken.class.getName());
   }
 
-  /**
-   * Supports other formats like JSON, XML
-   * @param request
-   * @return
-   */
-  @RequestMapping(value = ERROR_PATH)
+  @InitBinder
+  public void initBinder(WebDataBinder binder) {
+    binder.setDisallowedFields("password");
+  }
+
+  @RequestMapping(value = ERROR_PATH, produces = "text/html", method = RequestMethod.GET)
+  public ModelAndView errorHtml(HttpServletRequest request, @ModelAttribute("csrfToken") CsrfToken csrfToken) {
+    ModelAndView modelAndView = new ModelAndView("/errors/error", getErrorAttributes(request, false));
+    modelAndView.addObject("_csrf", csrfToken);
+    return modelAndView;
+  }
+
+  @RequestMapping(value = ERROR_PATH, method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
     Map<String, Object> body = getErrorAttributes(request, getTraceParameter(request));
@@ -58,16 +59,10 @@ public class AppErrorController implements ErrorController{
     return new ResponseEntity<Map<String, Object>>(body, status);
   }
 
-  /**
-   * Returns the path of the error page.
-   *
-   * @return the error path
-   */
   @Override
   public String getErrorPath() {
     return ERROR_PATH;
   }
-
 
   private boolean getTraceParameter(HttpServletRequest request) {
     String parameter = request.getParameter("trace");
@@ -80,14 +75,7 @@ public class AppErrorController implements ErrorController{
   private Map<String, Object> getErrorAttributes(HttpServletRequest request,
                                                  boolean includeStackTrace) {
     RequestAttributes requestAttributes = new ServletRequestAttributes(request);
-
-    Map<String,Object> m = this.errorAttributes.getErrorAttributes(requestAttributes, includeStackTrace);
-    System.out.println("Error: ");
-    System.out.println("============");
-    for(String key: m.keySet())
-      System.out.println(key+": "+m.get(key));
-    System.out.println("============");
-    return m;
+    return this.errorAttributes.getErrorAttributes(requestAttributes, includeStackTrace);
   }
 
   private HttpStatus getStatus(HttpServletRequest request) {
