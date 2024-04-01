@@ -1,5 +1,3 @@
-package io.shiftleft.controller;
-
 import io.shiftleft.model.AuthToken;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-
 /**
  * Admin checks login
  */
@@ -28,17 +25,8 @@ public class AdminController {
   private String fail = "redirect:/";
 
   // helper
-  private boolean isAdmin(String auth)
-  {
-    try {
-      ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(auth));
-      ObjectInputStream objectInputStream = new ObjectInputStream(bis);
-      Object authToken = objectInputStream.readObject();
-      return ((AuthToken) authToken).isAdmin();
-    } catch (Exception ex) {
-      System.out.println(" cookie cannot be deserialized: "+ex.getMessage());
-      return false;
-    }
+  private boolean isAdmin(AuthToken authToken) {
+    return authToken != null && authToken.isAdmin();
   }
 
   //
@@ -47,23 +35,21 @@ public class AdminController {
     return fail;
   }
 
-
   @RequestMapping(value = "/admin/printSecrets", method = RequestMethod.GET)
   public String doGetPrintSecrets(@CookieValue(value = "auth", defaultValue = "notset") String auth, HttpServletResponse response, HttpServletRequest request) throws Exception {
-
     if (request.getSession().getAttribute("auth") == null) {
       return fail;
     }
 
-    String authToken = request.getSession().getAttribute("auth").toString();
-    if(!isAdmin(authToken)) {
+    AuthToken authToken = (AuthToken) request.getSession().getAttribute("auth");
+    if (!isAdmin(authToken)) {
       return fail;
     }
 
     ClassPathResource cpr = new ClassPathResource("static/calculations.csv");
     try {
       byte[] bdata = FileCopyUtils.copyToByteArray(cpr.getInputStream());
-      response.getOutputStream().println(new String(bdata, StandardCharsets.UTF_8));
+      response.getWriter().println(new String(bdata, StandardCharsets.UTF_8));
       return null;
     } catch (IOException ex) {
       ex.printStackTrace();
@@ -88,36 +74,29 @@ public class AdminController {
     try {
       // no cookie no fun
       if (!auth.equals("notset")) {
-        if(isAdmin(auth)) {
-          request.getSession().setAttribute("auth",auth);
+        AuthToken authToken = (AuthToken) request.getSession().getAttribute("auth");
+        if (authToken != null && isAdmin(authToken)) {
           return succ;
         }
       }
 
       // split password=value
       String[] pass = password.split("=");
-      if(pass.length!=2) {
+      if (pass.length != 2) {
         return fail;
       }
+
       // compare pass
-      if(pass[1] != null && pass[1].length()>0 && pass[1].equals("shiftleftsecret"))
-      {
-        AuthToken authToken = new AuthToken(AuthToken.ADMIN);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(authToken);
-        String cookieValue = new String(Base64.getEncoder().encode(bos.toByteArray()));
-        response.addCookie(new Cookie("auth", cookieValue ));
-
-        // cookie is lost after redirection
-        request.getSession().setAttribute("auth",cookieValue);
-
+      if (pass[1] != null && pass[1].length() > 0 && pass[1].equals("shiftleftsecret")) {
+        AuthToken newAuthToken = new AuthToken(AuthToken.ADMIN);
+        request.getSession().setAttribute("auth", newAuthToken);
+        Cookie authCookie = new Cookie("auth", "admin");
+        authCookie.setHttpOnly(true);
+        response.addCookie(authCookie);
         return succ;
       }
       return fail;
-    }
-    catch (Exception ex)
-    {
+    } catch (Exception ex) {
       ex.printStackTrace();
       // no succ == fail
       return fail;
@@ -134,4 +113,8 @@ public class AdminController {
   public String doGetLogin(HttpServletResponse response, HttpServletRequest request) {
     return "redirect:/";
   }
+}
+
+        return "redirect:/";
+    }
 }
