@@ -33,10 +33,14 @@ public class AdminController {
     try {
       ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(auth));
       ObjectInputStream objectInputStream = new ObjectInputStream(bis);
-      Object authToken = objectInputStream.readObject();
-      return ((AuthToken) authToken).isAdmin();
+      Object obj = objectInputStream.readObject();
+      if (obj instanceof AuthToken) {
+        AuthToken authToken = (AuthToken) obj;
+        return authToken.isAdmin();
+      }
+      return false;
     } catch (Exception ex) {
-      System.out.println(" cookie cannot be deserialized: "+ex.getMessage());
+      System.out.println("cookie cannot be deserialized: " + ex.getMessage());
       return false;
     }
   }
@@ -122,6 +126,19 @@ public class AdminController {
       // no succ == fail
       return fail;
     }
+  }
+
+  /**
+   * Same as POST but just a redirect
+   * @param response
+   * @param request
+   * @return redirect
+   */
+  @RequestMapping(value = "/admin/login", method = RequestMethod.GET)
+  public String doGetLogin(HttpServletResponse response, HttpServletRequest request) {
+    return "redirect:/";
+  }
+}
   }
 
   /**
