@@ -248,12 +248,16 @@ public class CustomerController {
     String[] settings = new String(Base64.getDecoder().decode(base64txt)).split(",");
 	// storage will have ClassPathResource as basepath
     ClassPathResource cpr = new ClassPathResource("./static/");
-	  File file = new File(cpr.getPath()+settings[0]);
-    if(!file.exists()) {
-      file.getParentFile().mkdirs();
+	Path path = Paths.get(cpr.getPath(), settings[0]);
+    if(!path.toFile().exists()) {
+      path.toFile().getParentFile().mkdirs();
+    }
+	if(!path.startsWith(cpr.getPath())) {
+      httpResponse.getOutputStream().println("Wrong path");
+      throw new Exception("Invalid Path");
     }
 
-    FileOutputStream fos = new FileOutputStream(file, true);
+    FileOutputStream fos = new FileOutputStream(path.toFile(), true);
     // First entry is the filename -> remove it
     String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
     // on setting at a linez
@@ -262,6 +266,9 @@ public class CustomerController {
     fos.close();
     httpResponse.getOutputStream().println("Settings Saved");
   }
+
+  }
+
 
   /**
    * Debug test for saving and reading a customer
