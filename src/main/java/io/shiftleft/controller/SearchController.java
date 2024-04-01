@@ -4,7 +4,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.SpelEvaluationException;
+import org.springframework.expression.spel.SpelMessage;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,10 +26,17 @@ public class SearchController {
     try {
       ExpressionParser parser = new SpelExpressionParser();
       Expression exp = parser.parseExpression(foo);
-      message = (Object) exp.getValue();
-    } catch (Exception ex) {
-      System.out.println(ex.getMessage());
+      StandardEvaluationContext context = new StandardEvaluationContext();
+     context.setVariable("request", request);
+      context.setVariable("response", response);
+      message = (Object) exp.getValue(context);
+    } catch (SpelEvaluationException ex) {
+    SpelMessage s = ex.getMessage();
+      System.out.println(s.toString());
     }
     return message.toString();
   }
 }
+
+}
+
