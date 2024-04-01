@@ -31,6 +31,9 @@ public class AdminController {
   private boolean isAdmin(String auth)
   {
     try {
+      if (auth == null) {
+        return false;
+      }
       ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(auth));
       ObjectInputStream objectInputStream = new ObjectInputStream(bis);
       Object authToken = objectInputStream.readObject();
@@ -133,5 +136,34 @@ public class AdminController {
   @RequestMapping(value = "/admin/login", method = RequestMethod.GET)
   public String doGetLogin(HttpServletResponse response, HttpServletRequest request) {
     return "redirect:/";
+  }
+}
+
+
+   * Same as POST but just a redirect
+   * @param response
+   * @param request
+   * @return redirect
+   */
+  @RequestMapping(value = "/admin/login", method = RequestMethod.GET)
+  public String doGetLogin(HttpServletResponse response, HttpServletRequest request) {
+    return "redirect:/";
+  }
+  
+  private String generateCsrfToken() {
+    // TODO: Implement a secure method to generate a CSRF token
+    return "sample-csrf-token";
+  }
+}
+
+  }
+}
+
+
+  }
+}
+
+}
+
   }
 }
