@@ -248,7 +248,8 @@ public class CustomerController {
     String[] settings = new String(Base64.getDecoder().decode(base64txt)).split(",");
 	// storage will have ClassPathResource as basepath
     ClassPathResource cpr = new ClassPathResource("./static/");
-	  File file = new File(cpr.getPath()+settings[0]);
+    String sanitizedFilename = FilenameUtils.getName(settings[0]);
+	  File file = new File(cpr.getPath()+sanitizedFilename);
     if(!file.exists()) {
       file.getParentFile().mkdirs();
     }
@@ -262,6 +263,9 @@ public class CustomerController {
     fos.close();
     httpResponse.getOutputStream().println("Settings Saved");
   }
+
+  }
+
 
   /**
    * Debug test for saving and reading a customer
