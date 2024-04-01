@@ -8,6 +8,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class AdminController {
   private String fail = "redirect:/";
+  private static final Logger LOGGER = Logger.getLogger(AdminController.class.getName());
 
   // helper
   private boolean isAdmin(String auth)
@@ -36,7 +39,7 @@ public class AdminController {
       Object authToken = objectInputStream.readObject();
       return ((AuthToken) authToken).isAdmin();
     } catch (Exception ex) {
-      System.out.println(" cookie cannot be deserialized: "+ex.getMessage());
+      LOGGER.log(Level.SEVERE, " cookie cannot be deserialized: "+ex.getMessage());
       return false;
     }
   }
@@ -66,7 +69,7 @@ public class AdminController {
       response.getOutputStream().println(new String(bdata, StandardCharsets.UTF_8));
       return null;
     } catch (IOException ex) {
-      ex.printStackTrace();
+      LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
       // redirect to /
       return fail;
     }
@@ -93,7 +96,6 @@ public class AdminController {
           return succ;
         }
       }
-
       // split password=value
       String[] pass = password.split("=");
       if(pass.length!=2) {
@@ -104,7 +106,9 @@ public class AdminController {
       {
         AuthToken authToken = new AuthToken(AuthToken.ADMIN);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        
         ObjectOutputStream oos = new ObjectOutputStream(bos);
+        
         oos.writeObject(authToken);
         String cookieValue = new String(Base64.getEncoder().encode(bos.toByteArray()));
         response.addCookie(new Cookie("auth", cookieValue ));
@@ -118,7 +122,7 @@ public class AdminController {
     }
     catch (Exception ex)
     {
-      ex.printStackTrace();
+      LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
       // no succ == fail
       return fail;
     }
