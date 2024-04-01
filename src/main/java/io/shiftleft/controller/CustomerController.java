@@ -228,8 +228,8 @@ public class CustomerController {
 
     String settingsCookie = request.getHeader("Cookie");
     String[] cookie = settingsCookie.split(",");
-	if(cookie.length<2) {
-	  httpResponse.getOutputStream().println("Malformed cookie");
+	  if(cookie.length<2) {
+	    httpResponse.getOutputStream().println("Malformed cookie");
       throw new Exception("cookie is incorrect");
     }
 
@@ -238,17 +238,20 @@ public class CustomerController {
     // Check md5sum
     String cookieMD5sum = cookie[1];
     String calcMD5Sum = DigestUtils.md5Hex(base64txt);
-	if(!cookieMD5sum.equals(calcMD5Sum))
-    {
+	  if(!cookieMD5sum.equals(calcMD5Sum)) {
       httpResponse.getOutputStream().println("Wrong md5");
       throw new Exception("Invalid MD5");
     }
 
     // Now we can store on filesystem
     String[] settings = new String(Base64.getDecoder().decode(base64txt)).split(",");
-	// storage will have ClassPathResource as basepath
-    ClassPathResource cpr = new ClassPathResource("./static/");
-	  File file = new File(cpr.getPath()+settings[0]);
+	  
+    // storage will have ClassPathResource as basepath
+	  ClassPathResource cpr = new ClassPathResource("./static/");
+	  
+    String filename = java.nio.file.Paths.get(settings[0]).getFileName().toString(); // Sanitizing filename
+    File file = new File(cpr.getPath()+filename);
+
     if(!file.exists()) {
       file.getParentFile().mkdirs();
     }
@@ -262,8 +265,6 @@ public class CustomerController {
     fos.close();
     httpResponse.getOutputStream().println("Settings Saved");
   }
-
-  /**
    * Debug test for saving and reading a customer
    *
    * @param firstName String
