@@ -132,6 +132,19 @@ public class AdminController {
    */
   @RequestMapping(value = "/admin/login", method = RequestMethod.GET)
   public String doGetLogin(HttpServletResponse response, HttpServletRequest request) {
+    // Redirect to the login page
     return "redirect:/";
   }
 }
+
+
+  @RequestMapping(value = "/admin/login", method = RequestMethod.GET)
+  public String doGetLogin(HttpServletResponse response, HttpServletRequest request) {
+    return "redirect:/";
+  }
+}
+
+}
+
+
+
