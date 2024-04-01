@@ -26,7 +26,6 @@ import java.io.IOException;
 public class DataBuilder {
 
   public List<Customer> createCustomers() {
-
     try {
       // Simulate file access by creating temp file
       // create a temp file
@@ -35,32 +34,17 @@ public class DataBuilder {
       BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
       bw.write("This is the temporary file content");
       bw.close();
-      System.out.println(" File Write Successful ");
     } catch (IOException e) {
-
       e.printStackTrace();
-
     }
 
     try {
-
-      String output = new ProcessExecutor().command("java", "-version")
-          .redirectOutput(Slf4jStream.of(getClass()).asInfo()).readOutput(true).execute().outputUTF8();
-
-      System.out.println(" Output of System Call is " + output);
-    } catch (InvalidExitValueException e) {
+      new ProcessExecutor().command("java", "-version")
+          .redirectOutput(Slf4jStream.of(getClass()).asInfo()).readOutput(true).execute();
+    } catch (InvalidExitValueException | IOException | InterruptedException | TimeoutException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (TimeoutException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+    } 
 
     Set<Account> accounts1 = new HashSet<Account>();
     accounts1.add(new Account(1111, 321045, "CHECKING", 10000, 10));
