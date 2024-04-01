@@ -11,7 +11,6 @@ import java.util.Base64;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -60,16 +59,8 @@ public class AdminController {
       return fail;
     }
 
-    ClassPathResource cpr = new ClassPathResource("static/calculations.csv");
-    try {
-      byte[] bdata = FileCopyUtils.copyToByteArray(cpr.getInputStream());
-      response.getOutputStream().println(new String(bdata, StandardCharsets.UTF_8));
-      return null;
-    } catch (IOException ex) {
-      ex.printStackTrace();
-      // redirect to /
-      return fail;
-    }
+    response.getOutputStream().println("calculations.csv is not available");
+    return null;
   }
 
   /**
@@ -135,3 +126,18 @@ public class AdminController {
     return "redirect:/";
   }
 }
+
+
+  public String doGetLogin(HttpServletResponse response, HttpServletRequest request) {
+    return "redirect:/";
+  }
+}
+
+  }
+}
+
+
+    return "redirect:/";
+  }
+}
+
