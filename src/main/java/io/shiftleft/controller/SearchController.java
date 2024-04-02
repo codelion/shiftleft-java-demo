@@ -9,7 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.util.StringUtils;
+import org.owasp.encoder.Encode;
 
 /**
  * Search login
@@ -18,14 +20,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SearchController {
 
   @RequestMapping(value = "/search/user", method = RequestMethod.GET)
-  public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
+  public @ResponseBody String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
     java.lang.Object message = new Object();
-    try {
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression exp = parser.parseExpression(foo);
-      message = (Object) exp.getValue();
-    } catch (Exception ex) {
-      System.out.println(ex.getMessage());
+    foo = Encode.forJava(foo);
+    if(StringUtils.hasText(foo) && !StringUtils.containsWhitespace(foo)) {
+      try {
+        ExpressionParser parser = new SpelExpressionParser();
+        Expression exp = parser.parseExpression(foo);
+        message = (Object) exp.getValue();
+      } catch (Exception ex) {
+        System.out.println(ex.getMessage());
+      }
+    } else {
+      return "Invalid input";
     }
     return message.toString();
   }
