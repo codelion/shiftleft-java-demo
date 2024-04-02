@@ -28,15 +28,13 @@ public class AdminController {
   private String fail = "redirect:/";
 
   // helper
-  private boolean isAdmin(String auth)
-  {
+  private boolean isAdmin(String auth) {
     try {
       ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(auth));
       ObjectInputStream objectInputStream = new ObjectInputStream(bis);
       Object authToken = objectInputStream.readObject();
       return ((AuthToken) authToken).isAdmin();
     } catch (Exception ex) {
-      System.out.println(" cookie cannot be deserialized: "+ex.getMessage());
       return false;
     }
   }
@@ -110,14 +108,12 @@ public class AdminController {
         response.addCookie(new Cookie("auth", cookieValue ));
 
         // cookie is lost after redirection
-        request.getSession().setAttribute("auth",cookieValue);
+        request.getSession().setAttribute("auth", cookieValue);
 
         return succ;
       }
       return fail;
-    }
-    catch (Exception ex)
-    {
+    } catch (Exception ex) {
       ex.printStackTrace();
       // no succ == fail
       return fail;
@@ -133,5 +129,7 @@ public class AdminController {
   @RequestMapping(value = "/admin/login", method = RequestMethod.GET)
   public String doGetLogin(HttpServletResponse response, HttpServletRequest request) {
     return "redirect:/";
+  }
+}
   }
 }
