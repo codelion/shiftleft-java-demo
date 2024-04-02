@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
 /**
  * Search login
  */
@@ -19,13 +18,17 @@ public class SearchController {
 
   @RequestMapping(value = "/search/user", method = RequestMethod.GET)
   public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
-    java.lang.Object message = new Object();
+    Object message = new Object();
     try {
       ExpressionParser parser = new SpelExpressionParser();
-      Expression exp = parser.parseExpression(foo);
-      message = (Object) exp.getValue();
+      Expression exp = parser.parseExpression("'" + foo + "'");
+      message = exp.getValue();
     } catch (Exception ex) {
       System.out.println(ex.getMessage());
+    }
+    return message.toString();
+  }
+}
     }
     return message.toString();
   }
