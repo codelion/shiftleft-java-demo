@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -14,43 +15,24 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
-/**
- * Error controller, based on https://stackoverflow.com/questions/31134333/this-application-has-no-explicit-mapping-for-error/31838439#31838439
- */
 @Controller
 public class AppErrorController implements ErrorController{
 
-  /**
-   * Error Attributes in the Application
-   */
   private ErrorAttributes errorAttributes;
 
   private final static String ERROR_PATH = "/error";
 
-  /**
-   * Controller for the Error Controller
-   * @param errorAttributes
-   */
   public AppErrorController(ErrorAttributes errorAttributes) {
     this.errorAttributes = errorAttributes;
   }
 
-  /**
-   * Supports the HTML Error View
-   * @param request
-   * @return
-   */
-  @RequestMapping(value = ERROR_PATH, produces = "text/html")
+
+  @RequestMapping(value = ERROR_PATH, method = RequestMethod.GET, produces = "text/html")
   public ModelAndView errorHtml(HttpServletRequest request) {
     return new ModelAndView("/errors/error", getErrorAttributes(request, false));
   }
 
-  /**
-   * Supports other formats like JSON, XML
-   * @param request
-   * @return
-   */
-  @RequestMapping(value = ERROR_PATH)
+  @RequestMapping(value = ERROR_PATH, method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
     Map<String, Object> body = getErrorAttributes(request, getTraceParameter(request));
@@ -58,16 +40,10 @@ public class AppErrorController implements ErrorController{
     return new ResponseEntity<Map<String, Object>>(body, status);
   }
 
-  /**
-   * Returns the path of the error page.
-   *
-   * @return the error path
-   */
   @Override
   public String getErrorPath() {
     return ERROR_PATH;
   }
-
 
   private boolean getTraceParameter(HttpServletRequest request) {
     String parameter = request.getParameter("trace");
@@ -80,7 +56,6 @@ public class AppErrorController implements ErrorController{
   private Map<String, Object> getErrorAttributes(HttpServletRequest request,
                                                  boolean includeStackTrace) {
     RequestAttributes requestAttributes = new ServletRequestAttributes(request);
-
     Map<String,Object> m = this.errorAttributes.getErrorAttributes(requestAttributes, includeStackTrace);
     System.out.println("Error: ");
     System.out.println("============");
