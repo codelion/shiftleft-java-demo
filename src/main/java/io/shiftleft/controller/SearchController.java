@@ -21,11 +21,13 @@ public class SearchController {
   public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
     java.lang.Object message = new Object();
     try {
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression exp = parser.parseExpression(foo);
-      message = (Object) exp.getValue();
+      message = "Invalid input"; // Return a default message instead of evaluating user-inputted expression
     } catch (Exception ex) {
       System.out.println(ex.getMessage());
+    }
+    return message.toString();
+  }
+}
     }
     return message.toString();
   }
