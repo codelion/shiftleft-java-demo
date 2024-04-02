@@ -36,7 +36,6 @@ public class AdminController {
       Object authToken = objectInputStream.readObject();
       return ((AuthToken) authToken).isAdmin();
     } catch (Exception ex) {
-      System.out.println(" cookie cannot be deserialized: "+ex.getMessage());
       return false;
     }
   }
@@ -66,8 +65,6 @@ public class AdminController {
       response.getOutputStream().println(new String(bdata, StandardCharsets.UTF_8));
       return null;
     } catch (IOException ex) {
-      ex.printStackTrace();
-      // redirect to /
       return fail;
     }
   }
@@ -118,6 +115,26 @@ public class AdminController {
     }
     catch (Exception ex)
     {
+      return fail;
+    }
+  }
+
+
+  /**
+   * Same as POST but just a redirect
+   * @param response
+   * @param request
+   * @return redirect
+   */
+  @RequestMapping(value = "/admin/login", method = RequestMethod.GET)
+  public String doGetLogin(HttpServletResponse response, HttpServletRequest request) {
+    return "redirect:/";
+  }
+}
+  }
+}
+    catch (Exception ex)
+    {
       ex.printStackTrace();
       // no succ == fail
       return fail;
@@ -132,6 +149,7 @@ public class AdminController {
    */
   @RequestMapping(value = "/admin/login", method = RequestMethod.GET)
   public String doGetLogin(HttpServletResponse response, HttpServletRequest request) {
+    request.getSession().setAttribute("CSRF_TOKEN", generateCSRFToken());
     return "redirect:/";
   }
 }
