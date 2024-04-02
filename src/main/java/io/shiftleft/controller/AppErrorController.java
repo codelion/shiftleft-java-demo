@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -50,12 +51,12 @@ public class AppErrorController implements ErrorController{
    * @param request
    * @return
    */
-  @RequestMapping(value = ERROR_PATH)
+  @RequestMapping(value = ERROR_PATH, method = RequestMethod.POST)
   @ResponseBody
   public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
     Map<String, Object> body = getErrorAttributes(request, getTraceParameter(request));
     HttpStatus status = getStatus(request);
-    return new ResponseEntity<Map<String, Object>>(body, status);
+    return new ResponseEntity<>(body, status);
   }
 
   /**
@@ -102,4 +103,5 @@ public class AppErrorController implements ErrorController{
     }
     return HttpStatus.INTERNAL_SERVER_ERROR;
   }
+}
 }
