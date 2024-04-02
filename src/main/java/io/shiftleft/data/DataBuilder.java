@@ -4,63 +4,19 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
 
 import io.shiftleft.model.Patient;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
-import org.zeroturnaround.exec.InvalidExitValueException;
-import org.zeroturnaround.exec.ProcessExecutor;
-import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 
 import io.shiftleft.model.Address;
 import io.shiftleft.model.Customer;
 import io.shiftleft.model.Account;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
 @Component
 public class DataBuilder {
 
   public List<Customer> createCustomers() {
-
-    try {
-      // Simulate file access by creating temp file
-      // create a temp file
-      File temp = File.createTempFile("tempfile", ".tmp");
-      // write it
-      BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
-      bw.write("This is the temporary file content");
-      bw.close();
-      System.out.println(" File Write Successful ");
-    } catch (IOException e) {
-
-      e.printStackTrace();
-
-    }
-
-    try {
-
-      String output = new ProcessExecutor().command("java", "-version")
-          .redirectOutput(Slf4jStream.of(getClass()).asInfo()).readOutput(true).execute().outputUTF8();
-
-      System.out.println(" Output of System Call is " + output);
-    } catch (InvalidExitValueException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (TimeoutException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
 
     Set<Account> accounts1 = new HashSet<Account>();
     accounts1.add(new Account(1111, 321045, "CHECKING", 10000, 10));
